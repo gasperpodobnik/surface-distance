@@ -1,4 +1,4 @@
-from surface_distance import metrics
+from . import metrics
 import SimpleITK as sitk
 import numpy as np
 
