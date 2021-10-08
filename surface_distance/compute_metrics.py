@@ -2,8 +2,6 @@ from surface_distance import metrics
 import SimpleITK as sitk
 import numpy as np
 
-import surface_distance
-
 
 class compute_metrices_deepmind:
     def __init__(self, organs_labels_dict: dict, metrics_kwargs: dict = {}) -> None:
