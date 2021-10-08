@@ -14,5 +14,5 @@
 """Surface distance module: https://github.com/deepmind/surface-distance ."""
 
 from .metrics import *  # pylint: disable=wildcard-import
-import compute_metrics
+from .compute_metrics import *
 __version__ = "0.1"
