@@ -3,7 +3,7 @@ import SimpleITK as sitk
 import numpy as np
 
 
-class compute_metrices_deepmind:
+class compute_metrics_deepmind:
     def __init__(self, organs_labels_dict: dict, metrics_kwargs: dict = {}) -> None:
         self.organs_labels_dict = organs_labels_dict
         self.metrics_kwargs = metrics_kwargs
