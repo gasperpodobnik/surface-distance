@@ -20,7 +20,7 @@ setup(name="Surface Distance Based Measures",
       description=(
           "Library containing utilities to compute performance metrics for "
           "segmentation"),
-      url="https://github.com/deepmind/surface-distance",
+      url="https://github.com/gasperpodobnik/surface-distance",
       author="DeepMind",
       license="Apache License, Version 2.0",
       packages=["surface_distance"],
