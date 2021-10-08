@@ -108,7 +108,7 @@ class compute_metrices_deepmind:
             parameters_str=f"tolerance_mm={tolerance_mm}",
         )
 
-    def save_result(self, metric, value, parameters_str=None):
+    def save_result(self, metric, value, parameters_str="no_parameters"):
         self.case_results_list.append(
             {
                 **self.organ_info_dict,
