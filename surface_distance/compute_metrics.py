@@ -30,6 +30,9 @@ class compute_metrics_deepmind:
             }
             self.img_gt_np_bool = img_gt_np == organ_label
             self.img_pred_np_bool = img_pred_np == organ_label
+
+            self.check_if_missing()
+
             self.compute_all(
                 hd_percentile=self.metrics_kwargs.get("hd_percentile"),
                 func=self.metrics_kwargs.get("asd_function"),
@@ -37,6 +40,20 @@ class compute_metrics_deepmind:
             )
 
         return self.case_results_list
+
+    def check_if_missing(self):
+        if self.img_gt_np_bool.astype(int).sum() == 0:
+            missing = 1
+        else:
+            missing = 0
+        self.organ_info_dict['missing_organ_on_gt'] = missing
+
+        if self.img_pred_np_bool.astype(int).sum() == 0:
+            missing = 1
+        else:
+            missing = 0
+        self.organ_info_dict['missing_organ_on_pred'] = missing
+
 
     def compute_all(
         self, **kwargs,
