@@ -4,7 +4,9 @@ import numpy as np
 
 
 class compute_metrics_deepmind:
-    def __init__(self, organs_labels_dict: dict, metrics_kwargs: dict = {}) -> None:
+    def __init__(self, organs_labels_dict: dict = None, metrics_kwargs: dict = {}) -> None:
+        if organs_labels_dict is None:
+            organs_labels_dict = {'': None}
         self.organs_labels_dict = organs_labels_dict
         self.metrics_kwargs = metrics_kwargs
 
@@ -28,8 +30,12 @@ class compute_metrics_deepmind:
                 "organ_name": organ_name,
                 "organ_label": organ_label,
             }
-            self.img_gt_np_bool = img_gt_np == organ_label
-            self.img_pred_np_bool = img_pred_np == organ_label
+            if organ_label is None:
+                self.img_gt_np_bool = img_gt_np.astype(bool)
+                self.img_pred_np_bool = img_pred_np.astype(bool)
+            else:
+                self.img_gt_np_bool = img_gt_np == organ_label
+                self.img_pred_np_bool = img_pred_np == organ_label
 
             self.check_if_missing()
 
@@ -62,10 +68,10 @@ class compute_metrics_deepmind:
         self.compute_vol_dice()
         self.compute_surface_distances()
         self.compute_assd()
-        self.compute_hausdorff(percentile=kwargs.get("hd_percentile"))
-        self.compute_average_surface_distance(func=kwargs.get("asd_function"))
+        self.compute_hausdorff(percentiles=kwargs.get("hd_percentile"))
+        self.compute_average_surface_distance(functions=kwargs.get("asd_function"))
         self.compute_surface_dice_at_tolerance(
-            tolerance_mm=kwargs.get("surface_dice_tolerance")
+            tolerances_mm=kwargs.get("surface_dice_tolerance")
         )
 
     def compute_vol_dice(self):
@@ -87,41 +93,50 @@ class compute_metrics_deepmind:
         value = metrics.compute_assd(self.surface_distances)
         self.save_result(metric=metric_name, value=value)
 
-    def compute_hausdorff(self, percentile=None):
+    def compute_hausdorff(self, percentiles=None):
         metric_name = "hausdorff"
-        if percentile is None:
-            percentile = 95
-        value = metrics.compute_robust_hausdorff(self.surface_distances, percentile)
+        if percentiles is None:
+            percentiles = [95]
+        if not isinstance(percentiles, (list, tuple)):
+            percentiles = [percentiles]
+        for percentile in percentiles:
+            value = metrics.compute_robust_hausdorff(self.surface_distances, percentile)
 
-        self.save_result(
-            metric=metric_name, value=value, parameters_str=f"percentile={percentile}",
-        )
+            self.save_result(
+                metric=metric_name, value=value, parameters_str=f"percentile={percentile}",
+            )
 
-    def compute_average_surface_distance(self, func=None):
+    def compute_average_surface_distance(self, functions=None):
         metric_name = "average_surface_distance"
-        if func is None:
-            func = np.mean
-        value = metrics.compute_average_surface_distance(self.surface_distances)
+        if functions is None:
+            functions = [np.mean]
+        if not isinstance(functions, (list, tuple)):
+            functions = [functions]
+        for func in functions:
+            value = metrics.compute_average_surface_distance(self.surface_distances)
 
-        self.save_result(
-            metric=metric_name,
-            value=func(value),
-            parameters_str=f"function={func.__name__}",
-        )
+            self.save_result(
+                metric=metric_name,
+                value=func(value),
+                parameters_str=f"function={func.__name__}",
+            )
 
-    def compute_surface_dice_at_tolerance(self, tolerance_mm=None):
+    def compute_surface_dice_at_tolerance(self, tolerances_mm=None):
         metric_name = "surface_dice_at_tolerance"
-        if tolerance_mm is None:
-            tolerance_mm = 2.0
-        value = metrics.compute_surface_dice_at_tolerance(
-            self.surface_distances, tolerance_mm=tolerance_mm
-        )
+        if tolerances_mm is None:
+            tolerances_mm = [2.0]
+        if not isinstance(tolerances_mm, (list, tuple)):
+            tolerances_mm = [tolerances_mm]
+        for tolerance_mm in tolerances_mm:
+            value = metrics.compute_surface_dice_at_tolerance(
+                self.surface_distances, tolerance_mm=tolerance_mm
+            )
 
-        self.save_result(
-            metric=metric_name,
-            value=value,
-            parameters_str=f"tolerance_mm={tolerance_mm}",
-        )
+            self.save_result(
+                metric=metric_name,
+                value=value,
+                parameters_str=f"tolerance_mm={tolerance_mm}",
+            )
 
     def save_result(self, metric, value, parameters_str="no_parameters"):
         self.case_results_list.append(
