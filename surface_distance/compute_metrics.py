@@ -4,10 +4,14 @@ import numpy as np
 
 
 class compute_metrics_deepmind:
-    def __init__(self, organs_labels_dict: dict = None, metrics_kwargs: dict = {}) -> None:
-        if organs_labels_dict is None:
-            organs_labels_dict = {'': None}
-        self.organs_labels_dict = organs_labels_dict
+    def __init__(self, organs_labels_dict_gt: dict = None, organs_labels_dict_pred: dict = None, metrics_kwargs: dict = {}) -> None:
+        if organs_labels_dict_gt is None:
+            organs_labels_dict_gt = {'': None}
+        if organs_labels_dict_pred is None:
+            self.organs_labels_dict_pred = organs_labels_dict_gt
+        else:
+            self.organs_labels_dict_pred = organs_labels_dict_pred
+        self.organs_labels_dict_gt = organs_labels_dict_gt
         self.metrics_kwargs = metrics_kwargs
 
     def execute(self, fpath_gt, fpath_pred):
@@ -23,19 +27,21 @@ class compute_metrics_deepmind:
         ), "spacing does not match"
         self.spacing_np = img_gt.GetSpacing()[::-1]
 
-        for organ_name, organ_label in self.organs_labels_dict.items():
+        for organ_name, organ_label_gt in self.organs_labels_dict_gt.items():
             if organ_name == "background":
+                continue
+            if self.organs_labels_dict_pred.get(organ_name) is None:
                 continue
             self.organ_info_dict = {
                 "organ_name": organ_name,
-                "organ_label": organ_label,
+                "organ_label": organ_label_gt,
             }
-            if organ_label is None:
+            if organ_label_gt is None:
                 self.img_gt_np_bool = img_gt_np.astype(bool)
                 self.img_pred_np_bool = img_pred_np.astype(bool)
             else:
-                self.img_gt_np_bool = img_gt_np == organ_label
-                self.img_pred_np_bool = img_pred_np == organ_label
+                self.img_gt_np_bool = img_gt_np == organ_label_gt
+                self.img_pred_np_bool = img_pred_np == self.organs_labels_dict_pred.get(organ_name)
 
             self.check_if_missing()
 
