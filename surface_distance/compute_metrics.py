@@ -1,12 +1,20 @@
-from . import metrics
+try:
+    from . import metrics
+except:
+    import metrics
 import SimpleITK as sitk
 import numpy as np
 
 
 class compute_metrics_deepmind:
-    def __init__(self, organs_labels_dict_gt: dict = None, organs_labels_dict_pred: dict = None, metrics_kwargs: dict = {}) -> None:
+    def __init__(
+        self,
+        organs_labels_dict_gt: dict = None,
+        organs_labels_dict_pred: dict = None,
+        metrics_kwargs: dict = {},
+    ) -> None:
         if organs_labels_dict_gt is None:
-            organs_labels_dict_gt = {'': None}
+            organs_labels_dict_gt = {"": None}
         if organs_labels_dict_pred is None:
             self.organs_labels_dict_pred = organs_labels_dict_gt
         else:
@@ -35,13 +43,17 @@ class compute_metrics_deepmind:
             self.organ_info_dict = {
                 "organ_name": organ_name,
                 "organ_label": organ_label_gt,
+                "gt_fpath": fpath_gt,
+                "pred_fpath": fpath_pred,
             }
             if organ_label_gt is None:
                 self.img_gt_np_bool = img_gt_np.astype(bool)
                 self.img_pred_np_bool = img_pred_np.astype(bool)
             else:
                 self.img_gt_np_bool = img_gt_np == organ_label_gt
-                self.img_pred_np_bool = img_pred_np == self.organs_labels_dict_pred.get(organ_name)
+                self.img_pred_np_bool = img_pred_np == self.organs_labels_dict_pred.get(
+                    organ_name
+                )
 
             self.check_if_missing()
 
@@ -58,17 +70,17 @@ class compute_metrics_deepmind:
             missing = 1
         else:
             missing = 0
-        self.organ_info_dict['missing_organ_on_gt'] = missing
+        self.organ_info_dict["missing_organ_on_gt"] = missing
 
         if self.img_pred_np_bool.astype(int).sum() == 0:
             missing = 1
         else:
             missing = 0
-        self.organ_info_dict['missing_organ_on_pred'] = missing
-
+        self.organ_info_dict["missing_organ_on_pred"] = missing
 
     def compute_all(
-        self, **kwargs,
+        self,
+        **kwargs,
     ):
         # hd_percentile=None, asd_function=None, surface_dice_tolerance=None
         self.compute_vol_dice()
@@ -109,7 +121,9 @@ class compute_metrics_deepmind:
             value = metrics.compute_robust_hausdorff(self.surface_distances, percentile)
 
             self.save_result(
-                metric=metric_name, value=value, parameters_str=f"percentile={percentile}",
+                metric=metric_name,
+                value=value,
+                parameters_str=f"percentile={percentile}",
             )
 
     def compute_average_surface_distance(self, functions=None):
@@ -148,7 +162,11 @@ class compute_metrics_deepmind:
         self.case_results_list.append(
             {
                 **self.organ_info_dict,
-                **{"metric": metric, "value": value, "parameters": parameters_str,},
+                **{
+                    "metric": metric,
+                    "value": value,
+                    "parameters": parameters_str,
+                },
             }
         )
 
